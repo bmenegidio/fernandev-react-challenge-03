@@ -35,43 +35,141 @@ Ao enviar, deve-se apresentar um alert javascript com sucesso, limpar todos os c
 do formulário e zerar a barra de progresso novamente.
 */
 
+import { useState } from "react";
+
 function App() {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    civilState: "",
+    gender: "",
+  });
+  const formProgressInPercent = calculateProgress();
+
+  function updateFormData(formEvent) {
+    const {
+      target: { name, value },
+    } = formEvent;
+
+    setFormData((currentState) => {
+      return {
+        ...currentState,
+        [name]: value,
+      };
+    });
+  }
+
+  function calculateProgress() {
+    const fieldNames = Object.keys(formData);
+    const totalFields = fieldNames.length;
+    let qttValid = 0;
+    for (const fieldName of fieldNames) {
+      const formValue = formData[fieldName];
+      if (!!formValue) {
+        if (fieldName === "email") {
+          const emailRegex =
+            /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+          const isInvalidEmail = !emailRegex.test(formValue);
+          if (isInvalidEmail) {
+            continue;
+          }
+        }
+
+        if (fieldName === "name") {
+          const isInvalidName = formValue.trim().split(" ").length < 2;
+          if (isInvalidName) {
+            continue;
+          }
+        }
+
+        qttValid += 1;
+      }
+    }
+
+    return (qttValid / totalFields) * 100;
+  }
+
+  function handleFormSubmit() {
+    alert("Sucesso!");
+    setFormData({
+      name: "",
+      email: "",
+      civilState: "",
+      gender: "",
+    });
+  }
+
   return (
-    <div className='App'>
+    <div className="App">
       <h3>desafio fernandev</h3>
       <h1>progresso do formulário</h1>
 
       <main>
-        {/* crie a barra de progresso aqui */}
-        <div className='form-group'>
-          <label htmlFor=''>Nome Completo</label>
-          <input />
+        <div className="bar-container">
+          <div
+            className="bar"
+            style={{ width: `${formProgressInPercent}%` }}
+          ></div>
         </div>
-        <div className='form-group'>
-          <label htmlFor=''>E-mail</label>
-          <input />
+        <div className="form-group">
+          <label htmlFor="name">Nome Completo</label>
+          <input
+            id="name"
+            name="name"
+            onChange={updateFormData}
+            value={formData.name}
+          />
         </div>
-        <div className='form-group'>
-          <label htmlFor=''>Estado Civil</label>
-          <select>
-            <option value=''>- selecione...</option>
-            <option value='solteiro'>Solteiro</option>
-            <option value='casado'>Casado</option>
-            <option value='divorciado'>Divorciado</option>
+        <div className="form-group">
+          <label htmlFor="email">E-mail</label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            onChange={updateFormData}
+            value={formData.email}
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="civilState">Estado Civil</label>
+          <select id="civilState" name="civilState" onChange={updateFormData}>
+            <option value="">- selecione...</option>
+            <option value="solteiro">Solteiro</option>
+            <option value="casado">Casado</option>
+            <option value="divorciado">Divorciado</option>
           </select>
         </div>
-        <div className='form-group'>
-          <label htmlFor=''>Gênero</label>
-          <div className='radios-container'>
+        <div className="form-group">
+          <label htmlFor="gender">Gênero</label>
+          <div className="radios-container">
             <span>
-              <input type='radio' /> Masculino
+              <input
+                name="gender"
+                onChange={updateFormData}
+                type="radio"
+                value={"m"}
+                checked={formData.gender === "m"}
+              />{" "}
+              Masculino
             </span>
             <span>
-              <input type='radio' /> Feminino
+              <input
+                name="gender"
+                onChange={updateFormData}
+                type="radio"
+                value={"f"}
+                checked={formData.gender === "f"}
+              />{" "}
+              Feminino
             </span>
           </div>
         </div>
-        <button>Enviar Formulário</button>
+        <button
+          disabled={formProgressInPercent < 100}
+          onClick={handleFormSubmit}
+        >
+          Enviar Formulário
+        </button>
       </main>
     </div>
   );
